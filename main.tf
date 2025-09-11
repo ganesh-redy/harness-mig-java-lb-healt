@@ -66,6 +66,7 @@ resource "google_compute_instance_template" "web_app_template" {
 
   lifecycle {
     create_before_destroy = true
+    ignore_changes = [ target_size ]
   }
 }
 
@@ -101,6 +102,24 @@ resource "google_compute_instance_group_manager" "web_app_mig" {
     initial_delay_sec = 600
   }
 }
+# autoscale
+resource "google_compute_autoscaler" "web_app_autoscaler" {
+  name   = "web-app-autoscaler"
+  zone   = "us-central1-a"
+  target = google_compute_instance_group_manager.web_app_mig.self_link
+
+  autoscaling_policy {
+    max_replicas    = 3  # Maximum instances
+    min_replicas    = 2  # Minimum instances
+    cooldown_period = 60 # Cool-down period in seconds
+
+    # CPU utilization target (adjust as needed)
+    cpu_utilization {
+      target = 0.6 # Scale when CPU utilization reaches 60%
+    }
+  }
+}
+
 
 # 4. HTTP Load Balancer
 
@@ -109,7 +128,7 @@ resource "google_compute_backend_service" "web_app_backend_service" {
   name        = "web-app-backend-service"
   protocol    = "HTTP"
   port_name   = "http"
-  timeout_sec = 20
+  timeout_sec = 50
   health_checks = [
     google_compute_health_check.http_health_check.self_link
   ]
