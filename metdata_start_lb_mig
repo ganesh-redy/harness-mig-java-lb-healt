@@ -1,9 +1,13 @@
 # Define the Google Cloud provider and project settings.
-provider "google" {
-  project = "nimble-augury-465911-f3"
-   
-  
+terraform {
+  required_providers {
+    google = {
+      source  = "hashicorp/google"
+      version = "4.51.0"
+    }
+  }
 }
+
 
 
 # 1. Network and Firewall Rules
@@ -60,9 +64,23 @@ resource "google_compute_instance_template" "web_app_template" {
     }
   }
 
- labels = {
-   "label1" = "java"
- }
+  metadata = {
+    # FIX: Use replace() to strip Windows-style carriage returns (\r\n)
+    # and ensure the script uses Linux-style line endings (\n).
+    startup-script =<<-EOT
+      #!/bin/bash
+      # Wait for network to be ready
+      yum install yum-utils -y
+      yum  install -y openjdk-17-jdk
+      yum install maven -y
+      yum install git -y
+      git clone https://github.com/ganesh-redy/harness-iacm-java-ans.git 
+      cd harness-iacm-java-ans
+      mvn clean package
+      java -jar target/demo-0.0.1-SNAPSHOT.jar
+    EOT
+    
+  }
 
   lifecycle {
     create_before_destroy = true

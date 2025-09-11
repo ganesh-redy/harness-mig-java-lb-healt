@@ -1,10 +1,8 @@
-# Define the Google Cloud provider and project settings.
 provider "google" {
   project = "nimble-augury-465911-f3"
-   
+  credentials = file("gcp.json")
   
 }
-
 
 # 1. Network and Firewall Rules
 
@@ -60,9 +58,23 @@ resource "google_compute_instance_template" "web_app_template" {
     }
   }
 
- labels = {
-   "label1" = "java"
- }
+  metadata = {
+    # FIX: Use replace() to strip Windows-style carriage returns (\r\n)
+    # and ensure the script uses Linux-style line endings (\n).
+    startup-script =<<-EOT
+      #!/bin/bash
+      # Wait for network to be ready
+      yum install yum-utils -y
+      yum  install -y openjdk-17-jdk
+      yum install maven -y
+      yum install git -y
+      git clone https://github.com/ganesh-redy/harness-iacm-java-ans.git
+      cd harness-iacm-java-ans
+      mvn clean package
+      java -jar target/demo-0.0.1-SNAPSHOT.jar
+    EOT
+
+  }
 
   lifecycle {
     create_before_destroy = true
@@ -75,8 +87,7 @@ resource "google_compute_instance_group_manager" "web_app_mig" {
   name               = "web-app-mig"
   base_instance_name = "web-app"
   zone               = "us-central1-a"
-  target_size        = 2 # The desired number of instances.
-
+ 
   # Link the instance template to the MIG.
   version {
     instance_template = google_compute_instance_template.web_app_template.self_link
@@ -101,6 +112,26 @@ resource "google_compute_instance_group_manager" "web_app_mig" {
     initial_delay_sec = 600
   }
 }
+
+
+resource "google_compute_autoscaler" "web_app_autoscaler" {
+  name   = "web-app-autoscaler"
+  zone   = "us-central1-a"
+  target = google_compute_instance_group_manager.web_app_mig.self_link
+
+  autoscaling_policy {
+    max_replicas    = 3  # Maximum instances
+    min_replicas    = 2  # Minimum instances
+    cooldown_period = 60 # Cool-down period in seconds
+
+    # CPU utilization target (adjust as needed)
+    cpu_utilization {
+      target = 0.6 # Scale when CPU utilization reaches 60%
+    }
+  }
+}
+
+
 
 # 4. HTTP Load Balancer
 
@@ -142,6 +173,5 @@ output "load_balancer_ip" {
   description = "The public IP address of the HTTP Load Balancer."
   value       = google_compute_global_forwarding_rule.web_app_forwarding_rule.ip_address
 }
-
 
 
