@@ -78,6 +78,7 @@ resource "google_compute_instance_template" "web_app_template" {
 
   lifecycle {
     create_before_destroy = true
+    ignore_changes = [target_size]
   }
 }
 
