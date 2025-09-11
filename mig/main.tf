@@ -1,6 +1,6 @@
 provider "google" {
   project = "nimble-augury-465911-f3"
-  credentials = file("gcp.json")
+  
   
 }
 
