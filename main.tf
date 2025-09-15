@@ -64,6 +64,40 @@ resource "google_compute_instance_template" "web_app_template" {
    "label1" = "java"
  }
 
+metadata = {
+  startup-script =<<-EOT
+    #!/bin/bash
+    
+    # Get the private IP address (more reliable than hostname -i)
+    HOSTKEY=$(hostname -I | awk '{print $1}' || echo "unknown")
+    
+    # Alternative methods if the above fails:
+    # HOSTKEY=$(ip route get 1.2.3.4 | awk '{print $7}' | head -1)
+    # HOSTKEY=$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4) # For AWS
+    
+    echo "Detected host IP: $HOSTKEY"
+    
+    # Trigger Harness pipeline with the IP
+    response=$(curl -s -w "\n%{http_code}" -X POST \
+      -H 'content-type: application/json' \
+      --url 'https://app.harness.io/gateway/pipeline/api/webhook/custom/LK-U8_s-R6u5Nb-AVr5ysw/v3?accountIdentifier=ucHySz2jQKKWQweZdXyCog&orgIdentifier=default&projectIdentifier=SFTY_Training&pipelineIdentifier=cdmigtriggeransibleganesh&triggerIdentifier=custom_host_ip' \
+      -d '{"host": "'"$HOSTKEY"'"}')
+    
+    http_code=$(echo "$response" | tail -n1)
+    response_body=$(echo "$response" | sed '$d')
+    
+    echo "Harness API response: $http_code"
+    echo "Response body: $response_body"
+    
+    if [ "$http_code" -eq 200 ]; then
+        echo "Successfully triggered pipeline with IP: $HOSTKEY"
+    else
+        echo "Failed to trigger pipeline. HTTP code: $http_code"
+        exit 1
+    fi
+    EOT
+}
+
   lifecycle {
     create_before_destroy = true
     ignore_changes = [ target_size ]
