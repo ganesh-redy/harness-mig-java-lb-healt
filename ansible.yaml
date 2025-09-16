@@ -2,7 +2,7 @@
 - hosts: all
   become: true
   tasks:
-    - name: install tools:
+    - name: install tools
       yum:
         name:
           - yum-utils
