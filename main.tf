@@ -50,7 +50,7 @@ resource "google_compute_instance_template" "web_app_template" {
   }
 
   network_interface {
-    network = default
+    network = "default"
     # FIX: Added access_config to give VMs an external IP for package installation.
     access_config {
       // An empty block assigns an ephemeral public IP.
