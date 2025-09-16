@@ -8,29 +8,8 @@
           - yum-utils
           - wget
           - git
-          - python3
-          - python3-pip
-          - epel-release
         state: present
         update_cache: true
-
-    - name: install ansinl
-      yum:
-        name: ansible
-        state: present
-
-    - name: Docker repo added
-      shell: yum config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
-      args:
-        creates: /etc/yum.repos.d/docker-ce.repo
-
-    - name: install Docker
-      yum:
-        name:
-          - docker-ce
-          - docker-ce-cli
-          - containerd.io
-        state: present
 
     - name: install java
       yum:
