@@ -6,7 +6,6 @@
       yum:
         name:
           - yum-utils
-          - wget
           - git
         state: present
         update_cache: true
@@ -16,17 +15,10 @@
         name: java-17-openjdk
         state: present
 
-    - name: install maven
-      yum:
-        name: maven
-        state: present
     - name: git clone
       shell: |
         git clone https://github.com/ganesh-redy/harness-mig-java-lb-healt.git /root/java
 
-    - name: maven create
-      shell: |
-        cd /root/java && mvn clean package
 
     - name: check file and local files
       shell: |
