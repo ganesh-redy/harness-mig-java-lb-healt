@@ -8,16 +8,13 @@ provider "google" {
 
 # 1. Network and Firewall Rules
 
-resource "google_compute_network" "web_app_network" {
-  name                    = "web-app-network"
-  auto_create_subnetworks = true
-}
+
 
 # Allow traffic from the Google Cloud Load Balancer and Health Checkers.
 # This single rule replaces the two previous ones for better security and clarity.
 resource "google_compute_firewall" "allow_lb_traffic" {
   name    = "allow-lb-and-health-check"
-  network = google_compute_network.web_app_network.name
+  network = "default"
 
   allow {
     protocol = "tcp"
@@ -53,7 +50,7 @@ resource "google_compute_instance_template" "web_app_template" {
   }
 
   network_interface {
-    network = google_compute_network.web_app_network.name
+    network = default
     # FIX: Added access_config to give VMs an external IP for package installation.
     access_config {
       // An empty block assigns an ephemeral public IP.
