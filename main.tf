@@ -71,9 +71,7 @@ metadata = {
     # Get the private IP address (more reliable than hostname -i)
     HOSTKEY=$(hostname -I | awk '{print $1}' || echo "unknown")
     
-    # Alternative methods if the above fails:
-    # HOSTKEY=$(ip route get 1.2.3.4 | awk '{print $7}' | head -1)
-    # HOSTKEY=$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4) # For AWS
+   
     
     echo "Detected host IP: $HOSTKEY"
     
