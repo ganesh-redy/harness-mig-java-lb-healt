@@ -20,13 +20,6 @@
       yum:
         name: maven
         state: present
-
-    - name: docker start
-      systemd:
-        name: docker
-        state: started
-        enabled: yes
-
     - name: git clone
       shell: |
         git clone https://github.com/ganesh-redy/harness-mig-java-lb-healt.git /root/java
