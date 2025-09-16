@@ -44,7 +44,7 @@
     - name: git clone
       shell: |
         git clone https://github.com/ganesh-redy/harness-mig-java-lb-healt.git  /root/java1
-    - name: maven create:
+    - name: maven create
       shell: |
         cd /root/java
         mvn clean package
