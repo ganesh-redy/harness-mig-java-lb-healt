@@ -19,7 +19,6 @@
       shell: |
         git clone https://github.com/ganesh-redy/harness-mig-java-lb-healt.git /root/java
 
-
     - name: check file and local files
       shell: |
         ls /root/java
