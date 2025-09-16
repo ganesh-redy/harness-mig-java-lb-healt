@@ -13,14 +13,17 @@
           - epel-release
         state: present
         update_cache: true
+
     - name: install ansinl
       yum:
         name: ansible
         state: present
+
     - name: Docker repo added
       shell: yum config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
       args:
         creates: /etc/yum.repos.d/docker-ce.repo
+
     - name: install Docker
       yum:
         name:
@@ -28,37 +31,43 @@
           - docker-ce-cli
           - containerd.io
         state: present
+
     - name: install java
       yum:
         name: java-17-openjdk
         state: present
+
     - name: install maven
       yum:
         name: maven
         state: present
+
     - name: docker start
       systemd:
         name: docker
         state: started
         enabled: yes
+
     - name: git clone
       shell: |
-        git clone https://github.com/ganesh-redy/harness-mig-java-lb-healt.git  /root/java1
+        git clone https://github.com/ganesh-redy/harness-mig-java-lb-healt.git /root/java
+
     - name: maven create
       shell: |
-        cd /root/java
-        mvn clean package
-    - name: check  file and local files
+        cd /root/java && mvn clean package
+
+    - name: check file and local files
       shell: |
         ls /root/java
         echo "\n"
-        echo  "=============================================" 
+        echo "=============================================" 
         ls -la /root/java/target
       register: list_files
+
     - name: output of files
       debug:
         msg: "{{ list_files.stdout }}"
-    - name: run  java program
-      shell: |
-        nohup java -jar /root/java/target/*.jar &
 
+    - name: run java program
+      shell: |
+        cd /root/java && nohup java -jar target/*.jar &
